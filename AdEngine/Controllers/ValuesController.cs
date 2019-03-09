@@ -17,6 +17,13 @@ namespace AdEngine.Controllers
             return new string[] { "value1", "value2" };
         }
 
+        [HttpGet]
+        public ActionResult<string> GetTest()
+        {
+            return "elo";
+        }
+
+
         // GET api/values/5
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
