@@ -11,7 +11,7 @@ namespace AdEngine.API.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get set; }
+        public string Id { get; set; }
         [BsonElement("Username")]
         public string Username { get; set; }
         [BsonElement("Password")]

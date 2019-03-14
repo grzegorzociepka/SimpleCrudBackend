@@ -1,6 +1,8 @@
 ﻿using AdEngine.API.Helpers;
+using AdEngine.API.Helpers.Contexts;
 using AdEngine.API.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -14,23 +16,23 @@ namespace AdEngine.API.Services
     {
         UserModel Authenticate(string username, string password);
         IEnumerable<UserModel> GetAll();
-        UserModel GetById(int id);
+        UserModel GetById(string id);
         UserModel Create(UserModel user, string password);
         void Update(UserModel user, string password = null);
-        void Delete(int id);
+        void Delete(string id);
     }
     public class UserService : IUserService
     {
-        private DataContext _context;
-        public UserService(DataContext context)
+        private UserContext _context;
+        public UserService(IOptions<Settings> settings)
         {
-            _context = context;
+            _context = new UserContext(settings);
         }
         public UserModel Authenticate(string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return null;
-            var user = _context.Users.SingleOrDefault(x => x.Username == username);
+            var user = _context.Users.Find(x => x.Username == username).FirstOrDefaultAsync().Result;
 
             if (user == null)
                 throw new Exception("Username does not exist");
@@ -45,7 +47,7 @@ namespace AdEngine.API.Services
         {
             if (string.IsNullOrWhiteSpace(password))
                 throw new AppException("Password is required");
-            if (_context.Users.Any(x => x.Username == user.Username))
+            if (_context.Users.Find(x => x.Username == user.Username).FirstOrDefaultAsync().Result != null)
                 throw new AppException("Username \"" + user.Username + "\" is already taken");
 
             byte[] passwordHash, passwordSalt;
@@ -53,40 +55,40 @@ namespace AdEngine.API.Services
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            _context.Users.InsertOneAsync(user);
+
+            // _context.SaveChanges();
 
             return user;
         }
 
-        public void Delete(int id)
+        public void Delete(string id)
         {
-            var user = _context.Users.Find(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                _context.SaveChanges();
-            }
+            _context.Users.FindOneAndDeleteAsync(x => x.Id == id);
         }
 
         public IEnumerable<UserModel> GetAll()
         {
-            return _context.Users;
+            return _context.Users.Find(_ => true).ToList();
         }
 
-        public UserModel GetById(int id)
+        public UserModel GetById(string id)
         {
-            return _context.Users.Find(id);
+            return _context.Users.Find(x => x.Id == id).FirstOrDefault();
         }
 
         public void Update(UserModel userParam, string password = null)
         {
-            var user = _context.Users.Find(userParam.Id);
+            var filter = Builders<UserModel>.Filter.Eq(s => s.Id, userParam.Id);
+            var body = Builders<UserModel>.Update
+                .Set(s => s.firstName, userParam.firstName)
+                .Set(s => s.secondName, userParam.secondName);
+            var user = _context.Users.Find(userParam.Id).FirstOrDefault();
             if (user == null)
                 throw new AppException("User not found");
-            if(userParam.Username != user.Username)
+            if (userParam.Username != user.Username)
             {
-                if (_context.Users.Any(x => x.Username == userParam.Username))
+                if (_context.Users.Find(x => x.Username == userParam.Username).FirstOrDefault() != null)
                     throw new AppException("Username" + userParam.Username + "is already taken");
             }
 
@@ -94,7 +96,7 @@ namespace AdEngine.API.Services
             user.secondName = userParam.secondName;
             user.Username = userParam.Username;
 
-            if(!string.IsNullOrWhiteSpace(password))
+            if (!string.IsNullOrWhiteSpace(password))
             {
                 byte[] passwordHash, passwordSalt;
                 CreatePasswordHash(password, out passwordHash, out passwordSalt);
@@ -102,8 +104,9 @@ namespace AdEngine.API.Services
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
             }
-            _context.Users.Update(user);
-            _context.SaveChanges();
+            _context.Users.UpdateOne(filter,body);
+            //_context.Users.Update(user);
+            //_context.SaveChanges();
         }
 
         //private methods
@@ -125,7 +128,7 @@ namespace AdEngine.API.Services
             if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
             if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
 
-            using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
+            using (var hmac = new System.Security.Cryptography.HMACSHA256(storedSalt))
             {
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 for (int i = 0; i < computedHash.Length; i++)
@@ -136,5 +139,7 @@ namespace AdEngine.API.Services
 
             return true;
         }
+
+
     }
 }
