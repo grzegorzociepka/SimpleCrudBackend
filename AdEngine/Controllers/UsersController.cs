@@ -82,6 +82,7 @@ namespace AdEngine.API.Controllers
             }
         }
         [HttpGet]
+        [Route("/GetAll")]
         public IActionResult GetAll()
         {
             var users = _userService.GetAll();
@@ -89,7 +90,7 @@ namespace AdEngine.API.Controllers
             return Ok(userDtos);
         }
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public IActionResult GetById(string id)
         {
             var user = _userService.GetById(id);
             var userDto = _mapper.Map<UserDto>(user);
@@ -117,7 +118,7 @@ namespace AdEngine.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete(string id)
         {
             _userService.Delete(id);
             return Ok();
