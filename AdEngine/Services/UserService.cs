@@ -69,11 +69,13 @@ namespace AdEngine.API.Services
 
         public IEnumerable<UserModel> GetAll()
         {
+            var z = _context.Users.Find(_ => true).ToList();
             return _context.Users.Find(_ => true).ToList();
         }
 
         public UserModel GetById(string id)
         {
+            var y = _context.Users.Find(x => x.Id == id).FirstOrDefault();
             return _context.Users.Find(x => x.Id == id).FirstOrDefault();
         }
 
@@ -104,7 +106,7 @@ namespace AdEngine.API.Services
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
             }
-            _context.Users.UpdateOne(filter,body);
+            _context.Users.UpdateOne(filter, body);
             //_context.Users.Update(user);
             //_context.SaveChanges();
         }
@@ -125,8 +127,8 @@ namespace AdEngine.API.Services
         {
             if (password == null) throw new ArgumentNullException("password");
             if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-            if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
-            if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
+            if (storedHash.Length != 32) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
+            if (storedSalt.Length != 64) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
 
             using (var hmac = new System.Security.Cryptography.HMACSHA256(storedSalt))
             {

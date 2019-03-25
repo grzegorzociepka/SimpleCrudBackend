@@ -32,6 +32,7 @@ namespace AdEngine
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddCors(options => {
                 options.AddPolicy("CorsPolicy",
             builder => builder.AllowAnyOrigin()
@@ -42,6 +43,7 @@ namespace AdEngine
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddCors();
             services.AddAutoMapper();
+           
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString = Configuration.GetSection("MongoConnection:ConnectionString").Value;
@@ -103,7 +105,7 @@ namespace AdEngine
             {
                 app.UseHsts();
             }
-
+           
             app.UseCors("CorsPolicy");
             app.UseHttpsRedirection();
             app.UseMvc();

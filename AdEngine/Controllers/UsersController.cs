@@ -18,8 +18,8 @@ using System.Threading.Tasks;
 namespace AdEngine.API.Controllers
 {
     [Authorize]
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class UsersController : ControllerBase
     {
 
@@ -38,16 +38,16 @@ namespace AdEngine.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("authenticate")]
+        [HttpPost("/Login")]
         public IActionResult Authenticate([FromBody]UserDto userDto)
         {
-            var user = _userService.Authenticate(userDto.Username, userDto.Password);
+            var user = _userService.Authenticate(userDto.Username, userDto.password);
             if (user == null)
                 return Ok(new ReturnValue() { Status = 400, Value = "Username or password is incorrect" });
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
@@ -68,12 +68,15 @@ namespace AdEngine.API.Controllers
                 Token = tokenString
             });
         }
+
+        [AllowAnonymous]
+        [HttpPost("/Register")]
         public IActionResult Register([FromBody]UserDto userDto)
         {
             var user = _mapper.Map<UserModel>(userDto);
             try
             {
-                _userService.Create(user, userDto.Password);
+                _userService.Create(user, userDto.password);
                 return Ok();
             }
             catch (AppException ex)
@@ -81,20 +84,23 @@ namespace AdEngine.API.Controllers
                 return Ok(new ReturnValue() { Status = 400, Value = ex.Message });
             }
         }
+
+        [AllowAnonymous]
         [HttpGet]
-        [Route("/GetAll")]
-        public IActionResult GetAll()
+        public IActionResult Get()
         {
             var users = _userService.GetAll();
-            var userDtos = _mapper.Map<IList<UserDto>>(users);
-            return Ok(userDtos);
+            //var userDtos = _mapper.Map<IList<UserDto>>(users);
+            return Ok(users);
         }
+
+        [AllowAnonymous]
         [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        public IActionResult Get(string id)
         {
             var user = _userService.GetById(id);
-            var userDto = _mapper.Map<UserDto>(user);
-            return Ok(userDto);
+            //var userDto = _mapper.Map<UserDto>(user);
+            return Ok(user);
         }
 
         [HttpPut("{id}")]
@@ -107,7 +113,7 @@ namespace AdEngine.API.Controllers
             try
             {
                 // save 
-                _userService.Update(user, userDto.Password);
+                _userService.Update(user, userDto.password);
                 return Ok();
             }
             catch (AppException ex)

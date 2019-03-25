@@ -11,14 +11,16 @@ namespace AdEngine.API.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; }
+        [BsonElement("Id")]
         public string Id { get; set; }
         [BsonElement("Username")]
         public string Username { get; set; }
         [BsonElement("Password")]
         public string Password { get; set; }
-        [BsonElement("First name")]
+        [BsonElement("firstName")]
         public string firstName { get; set; }
-        [BsonElement("Second name")]
+        [BsonElement("secondName")]
         public string secondName { get; set; }
         [BsonElement("PasswordHash")]
         public byte[] PasswordHash { get; set; }
