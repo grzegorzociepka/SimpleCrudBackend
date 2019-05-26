@@ -64,18 +64,18 @@ namespace AdEngine.API.Services
 
         public void Delete(string id)
         {
-            _context.Users.FindOneAndDeleteAsync(x => x.Id == id);
+
+                _context.Users.FindOneAndDeleteAsync(x => x.Id == id);
+
         }
 
         public IEnumerable<UserModel> GetAll()
         {
-            var z = _context.Users.Find(_ => true).ToList();
             return _context.Users.Find(_ => true).ToList();
         }
 
         public UserModel GetById(string id)
         {
-            var y = _context.Users.Find(x => x.Id == id).FirstOrDefault();
             return _context.Users.Find(x => x.Id == id).FirstOrDefault();
         }
 

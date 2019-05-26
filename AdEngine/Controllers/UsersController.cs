@@ -14,12 +14,14 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace AdEngine.API.Controllers
 {
-    [Authorize]
-    [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("[controller]")]
     [ApiController]
+    
     public class UsersController : ControllerBase
     {
 
@@ -38,10 +40,10 @@ namespace AdEngine.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/Login")]
+        [HttpPost("Login")]
         public IActionResult Authenticate([FromBody]UserDto userDto)
         {
-            var user = _userService.Authenticate(userDto.Username, userDto.password);
+            var user = _userService.Authenticate(userDto.Username, userDto.Password);
             if (user == null)
                 return Ok(new ReturnValue() { Status = 400, Value = "Username or password is incorrect" });
 
@@ -76,7 +78,7 @@ namespace AdEngine.API.Controllers
             var user = _mapper.Map<UserModel>(userDto);
             try
             {
-                _userService.Create(user, userDto.password);
+                _userService.Create(user, userDto.Password);
                 return Ok();
             }
             catch (AppException ex)
@@ -90,7 +92,6 @@ namespace AdEngine.API.Controllers
         public IActionResult Get()
         {
             var users = _userService.GetAll();
-            //var userDtos = _mapper.Map<IList<UserDto>>(users);
             return Ok(users);
         }
 
@@ -99,21 +100,19 @@ namespace AdEngine.API.Controllers
         public IActionResult Get(string id)
         {
             var user = _userService.GetById(id);
-            //var userDto = _mapper.Map<UserDto>(user);
             return Ok(user);
         }
 
         [HttpPut("{id}")]
         public IActionResult Update(string id, [FromBody]UserDto userDto)
         {
-            // map dto to entity and set id
             var user = _mapper.Map<UserModel>(userDto);
             user.Id = id;
 
             try
             {
                 // save 
-                _userService.Update(user, userDto.password);
+                _userService.Update(user, userDto.Password);
                 return Ok();
             }
             catch (AppException ex)

@@ -9,8 +9,8 @@ namespace AdEngine.API.Dtos
     {
         public string Id { get; set; }
         public string Username { get; set; }  
-        public string firstName { get; set; }   
-        public string secondName { get; set; }
-        public string password { get; set; }
+        public string FirstName { get; set; }   
+        public string SecondName { get; set; }
+        public string Password { get; set; }
     }
 }

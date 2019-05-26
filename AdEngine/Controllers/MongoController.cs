@@ -20,6 +20,7 @@ namespace AdEngine.API.Controllers
         }
         public static async Task MainAsync()
         {
+            /*
             var db = getDb();
             var collection = db.GetCollection<BsonDocument>("testDB");
 
@@ -28,16 +29,8 @@ namespace AdEngine.API.Controllers
             document.Add("age", 24);
             document.Add("subjects", new BsonArray() { "Anglish", "Math", "Physics" });
             await collection.InsertOneAsync(document);
+            */
 
-            //var mongoClient = new MongoClient(IniProperties.mongoUrl);
-            //IMongoDatabase db = mongoClient.GetDatabase("testDB");
-            //var document = new BsonDocument
-            //    {
-            //      {"firstname", BsonValue.Create("Beniz:DDD")}
-            //    };
-
-            //IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>("students");
-            //collection.InsertOneAsync(document);
         }
 
     }
